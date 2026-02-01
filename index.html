@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { background-color: #f4f7f6; font-family: sans-serif; }
-        .form-card { border: none; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: #fff; }
-        .header-brand { background: #0056b3; color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center; }
+        .form-card { border: none; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: #fff; overflow: hidden; }
+        .header-brand { background: #0056b3; color: white; padding: 20px; text-align: center; }
         #map { height: 250px; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px; }
-        .btn-send { background-color: #25d366; color: white; font-weight: bold; border-radius: 30px; }
-        .btn-send:hover { background-color: #1ebe57; color: white; }
+        .btn-send { background-color: #25d366; color: white; font-weight: bold; border-radius: 30px; transition: 0.3s; }
+        .btn-send:hover { background-color: #1ebe57; color: white; transform: scale(1.02); }
     </style>
 </head>
 <body>
@@ -22,50 +22,58 @@
         <div class="col-md-6">
             <div class="form-card">
                 <div class="header-brand">
-                    <h4 class="mb-0">Form Registrasi</h4>
+                    <h4 class="mb-0">Form Registrasi Layanan</h4>
                 </div>
                 <div class="card-body p-4">
                     <form id="waForm">
                         <div class="mb-3">
                             <label class="form-label">Nama Lengkap</label>
-                            <input type="text" id="nama" class="form-control" required>
+                            <input type="text" id="nama" class="form-control" placeholder="Nama sesuai KTP" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nomor WhatsApp</label>
+                                <input type="tel" id="nohp" class="form-control" placeholder="08xxxx" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nomor KTP (16 Digit)</label>
+                                <input type="number" id="ktp" class="form-control" placeholder="320..." required>
+                                <div id="ktpError" class="text-danger small mt-1" style="display:none;">Harus 16 digit!</div>
+                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Nomor WhatsApp</label>
-                            <input type="tel" id="nohp" class="form-control" placeholder="08xxxxxxxxxx" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Nomor KTP (16 Digit)</label>
-                            <input type="number" id="ktp" class="form-control" placeholder="Harus 16 digit" required>
-                            <div id="ktpError" class="text-danger small mt-1" style="display:none;">NIK harus tepat 16 digit!</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Paket Berlangganan</label>
-                            <select id="paket" class="form-select" required>
+                            <label class="form-label">Pilih Paket Berlangganan</label>
+                            <select id="paket" class="form-select" onchange="toggleLainnya()" required>
                                 <option value="" disabled selected>Pilih Paket...</option>
-                                <option value="Hemat">Hemat - Rp 150rb</option>
-                                <option value="Super">Super - Rp 300rb</option>
-                                <option value="Ultimate">Ultimate - Rp 500rb</option>
+                                <option value="Paket 110">Paket 110</option>
+                                <option value="Paket 135">Paket 135</option>
+                                <option value="Paket 166">Paket 166</option>
+                                <option value="Paket 222">Paket 222</option>
+                                <option value="Lainnya">Lainnya (Isi Manual)</option>
                             </select>
                         </div>
 
+                        <div class="mb-3" id="inputLainnya" style="display:none;">
+                            <label class="form-label">Masukkan Nama Paket/Harga</label>
+                            <input type="text" id="paketManual" class="form-control" placeholder="Contoh: Paket Custom 300">
+                        </div>
+
                         <div class="mb-3">
-                            <label class="form-label">Alamat Pemasangan</label>
+                            <label class="form-label">Alamat Lengkap</label>
                             <textarea id="alamat" class="form-control" rows="2" required></textarea>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label text-primary"><b>Geser Pin untuk Lokasi Map:</b></label>
+                            <label class="form-label text-primary"><b>Tag Lokasi Map (Geser Pin):</b></label>
                             <div id="map"></div>
                             <input type="hidden" id="lat">
                             <input type="hidden" id="lng">
                         </div>
 
-                        <button type="submit" class="btn btn-send w-100 p-2">
-                            KIRIM KE WHATSAPP ADMIN
+                        <button type="submit" class="btn btn-send w-100 p-3 mt-2">
+                            KIRIM PENDAFTARAN KE WHATSAPP
                         </button>
                     </form>
                 </div>
@@ -76,10 +84,9 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Inisialisasi Peta (Default Jakarta)
+    // Map Setup
     const map = L.map('map').setView([-6.2088, 106.8456], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
     let marker = L.marker([-6.2088, 106.8456], {draggable: true}).addTo(map);
 
     function updateCoords(lat, lng) {
@@ -93,36 +100,46 @@
         updateCoords(p.lat, p.lng);
     });
 
-    // Validasi & Kirim WA
+    // Fungsi Toggle Input Manual
+    function toggleLainnya() {
+        const paketSelect = document.getElementById('paket').value;
+        const divLainnya = document.getElementById('inputLainnya');
+        if (paketSelect === "Lainnya") {
+            divLainnya.style.display = 'block';
+        } else {
+            divLainnya.style.display = 'none';
+        }
+    }
+
+    // Submit Action
     document.getElementById('waForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
         const ktp = document.getElementById('ktp').value;
-        const err = document.getElementById('ktpError');
-
-        // Validasi NIK 16 digit
         if (ktp.length !== 16) {
-            err.style.display = 'block';
-            document.getElementById('ktp').focus();
+            document.getElementById('ktpError').style.display = 'block';
             return;
-        } else {
-            err.style.display = 'none';
         }
 
         const nama = document.getElementById('nama').value;
         const nohp = document.getElementById('nohp').value;
-        const paket = document.getElementById('paket').value;
         const alamat = document.getElementById('alamat').value;
         const lat = document.getElementById('lat').value;
         const lng = document.getElementById('lng').value;
-        const adminNumber = "628113718494";
+        
+        // Cek apakah paket pilih manual
+        let paketTerpilih = document.getElementById('paket').value;
+        if (paketTerpilih === "Lainnya") {
+            paketTerpilih = "Lainnya (" + document.getElementById('paketManual').value + ")";
+        }
 
-        const text = `*REGISTRASI PELANGGAN BARU*%0A` +
+        const adminNumber = "628113718494";
+        const text = `*PENDAFTARAN BARU*%0A` +
                      `--------------------------%0A` +
                      `👤 Nama: ${nama}%0A` +
                      `📱 WA: ${nohp}%0A` +
                      `🆔 KTP: ${ktp}%0A` +
-                     `📦 Paket: ${paket}%0A` +
+                     `📦 Paket: ${paketTerpilih}%0A` +
                      `🏠 Alamat: ${alamat}%0A` +
                      `📍 Lokasi: https://www.google.com/maps?q=${lat},${lng}%0A` +
                      `--------------------------`;
