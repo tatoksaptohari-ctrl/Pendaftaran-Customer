@@ -95,7 +95,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const URL_SHEETS = 'https://script.google.com/macros/s/AKfycbz-yHr8YyCHLFaHRebRa1I426EkFmOzZSjLnitJnSujOvwcSAttjTaJH2fQwKgoLvD0Ng/exec';
+    const URL_SHEETS = 'https://script.google.com/macros/s/AKfycbx2Dp-84xPluBioisYLAUiCdzeSNnrEIgAId4045Xp3PtZLaVCucBVtlpdXcgxpMrCALw/exec';
     const NOMOR_ADMIN = '628113718494';
 
     var map = L.map('map').setView([-6.2000, 106.8000], 13);
@@ -155,4 +155,24 @@
             lokasi: linkMap
         });
 
-        fetch(URL_SHEETS, { method: 'POST', mode:
+        fetch(URL_SHEETS, { method: 'POST', mode: 'no-cors', body: params })
+        .then(() => {
+            const pesan = `*PENDAFTARAN PELANGGAN BARU*%0A` +
+                          `👤 Nama: ${document.getElementById('nama').value}%0A` +
+                          `🆔 KTP: ${document.getElementById('ktp').value}%0A` +
+                          `🏠 Alamat KTP: ${document.getElementById('alamat_ktp').value}%0A` +
+                          `💬 WA: ${document.getElementById('nowa').value}%0A` +
+                          `📞 HP Cadangan: ${document.getElementById('nohp').value}%0A` +
+                          `📍 Alamat Pasang: ${document.getElementById('alamat_pasang').value}%0A` +
+                          `🔌 Modem: ${document.getElementById('merk').value} (${document.getElementById('sn').value})%0A` +
+                          `📦 Paket: ${pkt}%0A` +
+                          `🗺️ Map: ${linkMap}`;
+            
+            window.open(`https://api.whatsapp.com/send?phone=${NOMOR_ADMIN}&text=${pesan}`, '_blank');
+            btn.disabled = false;
+            btn.innerText = "DAFTARKAN PELANGGAN";
+        });
+    });
+</script>
+</body>
+</html>
