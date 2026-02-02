@@ -13,7 +13,7 @@
         #map { height: 280px; width: 100%; border-radius: 10px; border: 1px solid #ccc; }
         .btn-submit { background: #25d366; color: white; font-weight: bold; border-radius: 50px; padding: 12px; border: none; width: 100%; margin-top: 10px; }
         .btn-gps { background: #007bff; color: white; font-size: 12px; border-radius: 5px; border: none; padding: 5px 10px; margin-bottom: 5px; }
-        label { font-weight: 600; }
+        label { font-weight: 600; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -22,23 +22,37 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card">
-                <div class="header"><h4>Form Pendaftaran</h4></div>
+                <div class="header"><h4>Form Pendaftaran Pelanggan</h4></div>
                 <div class="card-body p-4">
                     <form id="regForm">
                         <div class="mb-3">
-                            <label class="form-label">Nama Lengkap</label>
-                            <input type="text" id="nama" class="form-control" required>
+                            <label class="form-label">Nama Lengkap Pelanggan</label>
+                            <input type="text" id="nama" class="form-control" placeholder="Nama sesuai KTP" required>
                         </div>
                         <div class="row">
-                            <div class="col-6 mb-3"><label class="form-label">WhatsApp</label><input type="tel" id="nohp" class="form-control" required></div>
-                            <div class="col-6 mb-3"><label class="form-label">NIK KTP</label><input type="number" id="ktp" class="form-control" required></div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">No. WhatsApp Pelanggan</label>
+                                <input type="tel" id="nowa_pelanggan" class="form-control" placeholder="08xxx" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">No. HP Cadangan</label>
+                                <input type="tel" id="nohp_pelanggan" class="form-control" placeholder="08xxx">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">NIK KTP (16 Digit)</label>
+                            <input type="number" id="ktp" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alamat Lengkap Pemasangan</label>
+                            <textarea id="alamat" class="form-control" rows="3" placeholder="Nama jalan, Blok, No Rumah, RT/RW" required></textarea>
                         </div>
                         <div class="row">
                             <div class="col-6 mb-3"><label class="form-label">Merk Modem</label><input type="text" id="merk" class="form-control" required></div>
                             <div class="col-6 mb-3"><label class="form-label">SN Modem</label><input type="text" id="sn" class="form-control" required></div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Paket</label>
+                            <label class="form-label">Paket Berlangganan</label>
                             <select id="paket" class="form-select" onchange="checkPaket()" required>
                                 <option value="110">Paket 110</option>
                                 <option value="135">Paket 135</option>
@@ -51,21 +65,14 @@
                             <input type="text" id="paketManual" class="form-control" placeholder="Isi paket manual">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Alamat Lengkap</label>
-                            <textarea id="alamat" class="form-control" rows="2" required></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
-                                <label class="text-primary">Tag Lokasi Pemasangan:</label>
-                                <button type="button" class="btn-gps" onclick="getLocation()">📍 Gunakan GPS Saya</button>
+                                <label class="text-primary">Tag Lokasi Pelanggan:</label>
+                                <button type="button" class="btn-gps" onclick="getLocation()">Ambil Titik GPS</button>
                             </div>
                             <div id="map"></div>
                             <input type="hidden" id="lat"><input type="hidden" id="lng">
-                            <small class="text-muted text-center d-block mt-1">Geser pin jika posisi kurang pas</small>
                         </div>
-
-                        <button type="submit" id="btnProses" class="btn-submit">SIMPAN & KIRIM WA</button>
+                        <button type="submit" id="btnProses" class="btn-submit">DAFTARKAN PELANGGAN</button>
                     </form>
                 </div>
             </div>
@@ -75,11 +82,9 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // GANTI DENGAN URL GOOGLE APPS SCRIPT ANDA
     const URL_SHEETS = 'https://script.google.com/macros/s/AKfycbz-yHr8YyCHLFaHRebRa1I426EkFmOzZSjLnitJnSujOvwcSAttjTaJH2fQwKgoLvD0Ng/exec';
     const NOMOR_ADMIN = '628113718494';
 
-    // Inisialisasi Peta
     var map = L.map('map').setView([-6.2000, 106.8000], 13);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}').addTo(map);
     var marker = L.marker([-6.2000, 106.8000], {draggable: true}).addTo(map);
@@ -94,26 +99,17 @@
         updateInputs(pos.lat.toFixed(6), pos.lng.toFixed(6));
     });
 
-    // FUNGSI GPS OTOMATIS
     function getLocation() {
         if (navigator.geolocation) {
-            alert("Sedang mencari lokasi Anda, mohon tunggu...");
             navigator.geolocation.getCurrentPosition(function(position) {
                 var lat = position.coords.latitude;
                 var lng = position.coords.longitude;
-                var newPos = new L.LatLng(lat, lng);
-                marker.setLatLng(newPos);
-                map.setView(newPos, 17); // Zoom lebih dekat ke lokasi GPS
+                marker.setLatLng([lat, lng]);
+                map.setView([lat, lng], 17);
                 updateInputs(lat.toFixed(6), lng.toFixed(6));
-            }, function() {
-                alert("Gagal mendapatkan lokasi. Pastikan GPS HP aktif.");
-            }, { enableHighAccuracy: true });
-        } else {
-            alert("Browser tidak mendukung GPS.");
+            });
         }
     }
-
-    // Jalankan GPS saat pertama buka
     window.onload = getLocation;
 
     function checkPaket() {
@@ -124,7 +120,7 @@
         e.preventDefault();
         const btn = document.getElementById('btnProses');
         btn.disabled = true;
-        btn.innerText = "Memproses...";
+        btn.innerText = "Menyimpan...";
 
         let pkt = document.getElementById('paket').value;
         if(pkt === 'Lainnya') pkt = document.getElementById('paketManual').value;
@@ -135,26 +131,31 @@
 
         const params = new URLSearchParams({
             nama: document.getElementById('nama').value,
-            nohp: document.getElementById('nohp').value,
+            nowa: document.getElementById('nowa_pelanggan').value,
+            nohp: document.getElementById('nohp_pelanggan').value,
             ktp: document.getElementById('ktp').value,
+            alamat: document.getElementById('alamat').value,
             merk: document.getElementById('merk').value,
             sn: document.getElementById('sn').value,
             paket: pkt,
-            alamat: document.getElementById('alamat').value,
             lokasi: linkMap
         });
 
-        // Simpan ke Sheets
         fetch(URL_SHEETS, { method: 'POST', mode: 'no-cors', body: params })
         .then(() => {
-            // Kirim ke WhatsApp
-            const pesan = `*PENDAFTARAN BARU*%0A Nama: ${document.getElementById('nama').value}%0A KTP: ${document.getElementById('ktp').value}%0A Paket: ${pkt}%0A Modem: ${document.getElementById('merk').value} (${document.getElementById('sn').value})%0A Alamat: ${document.getElementById('alamat').value}%0A Lokasi: ${linkMap}`;
+            const pesan = `*PENDAFTARAN PELANGGAN BARU*%0A` +
+                          `👤 Nama: ${document.getElementById('nama').value}%0A` +
+                          `💬 WA Pelanggan: ${document.getElementById('nowa_pelanggan').value}%0A` +
+                          `📞 HP Cadangan: ${document.getElementById('nohp_pelanggan').value}%0A` +
+                          `🆔 KTP: ${document.getElementById('ktp').value}%0A` +
+                          `🏠 Alamat: ${document.getElementById('alamat').value}%0A` +
+                          `🔌 Modem: ${document.getElementById('merk').value} (${document.getElementById('sn').value})%0A` +
+                          `📦 Paket: ${pkt}%0A` +
+                          `📍 Lokasi: ${linkMap}`;
+            
             window.open(`https://api.whatsapp.com/send?phone=${NOMOR_ADMIN}&text=${pesan}`, '_blank');
             btn.disabled = false;
-            btn.innerText = "SIMPAN & KIRIM WA";
-        }).catch(() => {
-            alert("Gagal koneksi database.");
-            btn.disabled = false;
+            btn.innerText = "DAFTARKAN PELANGGAN";
         });
     });
 </script>
