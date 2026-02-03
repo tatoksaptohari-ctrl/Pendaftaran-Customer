@@ -38,7 +38,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Alamat Sesuai KTP</label>
-                            <textarea id="alamat_ktp" class="form-control" rows="2" placeholder="Alamat lengkap sesuai identitas KTP" required></textarea>
+                            <textarea id="alamat_ktp" class="form-control" rows="2" placeholder="Tulis alamat lengkap sesuai identitas KTP" required></textarea>
                         </div>
 
                         <div class="section-title">KONTAK & LOKASI PASANG</div>
@@ -54,7 +54,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Alamat Pemasangan WiFi</label>
-                            <textarea id="alamat_pasang" class="form-control" rows="2" placeholder="Detail lokasi pemasangan (jika berbeda dengan KTP)" required></textarea>
+                            <textarea id="alamat_pasang" class="form-control" rows="2" placeholder="Detail lokasi pemasangan" required></textarea>
                         </div>
 
                         <div class="section-title">PERANGKAT & PAKET</div>
@@ -85,7 +85,7 @@
                             <input type="hidden" id="lat"><input type="hidden" id="lng">
                         </div>
                         
-                        <button type="submit" id="btnProses" class="btn-submit">DAFTARKAN PELANGGAN</button>
+                        <button type="submit" id="btnProses" class="btn-submit">DAFTARKAN KE GROUP WA</button>
                     </form>
                 </div>
             </div>
@@ -95,8 +95,10 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const URL_SHEETS = 'https://script.google.com/macros/s/AKfycbx2Dp-84xPluBioisYLAUiCdzeSNnrEIgAId4045Xp3PtZLaVCucBVtlpdXcgxpMrCALw/exec';
-    const NOMOR_ADMIN = '628113718494';
+    const URL_SHEETS = 'GANTI_DENGAN_URL_WEB_APP_ANDA';
+    
+    // GANTI INI DENGAN LINK GROUP WA ANDA
+    const LINK_GROUP_WA = 'https://chat.whatsapp.com/GANTI_DENGAN_KODE_INVITE_GROUP_ANDA';
 
     var map = L.map('map').setView([-6.2000, 106.8000], 13);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}').addTo(map);
@@ -168,9 +170,15 @@
                           `📦 Paket: ${pkt}%0A` +
                           `🗺️ Map: ${linkMap}`;
             
-            window.open(`https://api.whatsapp.com/send?phone=${NOMOR_ADMIN}&text=${pesan}`, '_blank');
+            // Mengarahkan ke Group WA dengan pesan
+            // Catatan: WhatsApp Web/App biasanya mengabaikan teks jika via Link Invite langsung, 
+            // Jadi admin harus tetap copy-paste atau data sudah aman di Google Sheets.
+            // Namun, link di bawah adalah cara terbaik untuk mengarahkan ke grup.
+            window.open(`${LINK_GROUP_WA}`, '_blank');
+            
+            alert("Data tersimpan di Google Sheets! Silakan bergabung ke Grup jika belum.");
             btn.disabled = false;
-            btn.innerText = "DAFTARKAN PELANGGAN";
+            btn.innerText = "DAFTARKAN KE GROUP WA";
         });
     });
 </script>
